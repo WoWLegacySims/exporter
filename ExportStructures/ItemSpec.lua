@@ -16,7 +16,7 @@ local Env = select(2, ...)
 local protobufLayout = {
     id = "number",            -- int
     enchant = "number",       -- int
-    --random_suffix = "number", -- int
+    random_suffix = "number", -- int
     gems = "table",           -- int[]
 }
 
@@ -52,7 +52,7 @@ function ItemSpecMeta:FillFromItemLink(itemLink)
             end 
         end
     end
-    --self.random_suffix = tonumber(suffixId)
+    self.random_suffix = tonumber(suffixId)
 end
 
 ---Create a new ItemSpec table.
