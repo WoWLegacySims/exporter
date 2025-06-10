@@ -1,0 +1,19 @@
+## Title: WowSimsExporter
+## Version: v2.12.0
+## Author: Tereneckla
+## Interface: 30300
+## Notes: This is an exporter written to quickly export your character to https://wowlegacysims.github.io/sims/wotlk/all/ for simulations.
+## SavedVariables: WSEDB
+## OptionalDeps: Ace3
+
+embeds.xml
+
+extras.lua
+Shared.lua
+SpecOptions.lua
+ExportStructures\ItemSpec.lua
+ExportStructures\EquipmentSpec.lua
+ExportStructures\Misc.lua
+ExportStructures\Character.lua
+UI.lua
+WowSimsExporter.lua

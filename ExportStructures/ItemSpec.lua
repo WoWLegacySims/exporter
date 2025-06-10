@@ -14,22 +14,11 @@ local Env = select(2, ...)
 
 -- Protobuf layout used in the sim. Strings are types for some weak type checking (on key creation only!)
 local protobufLayout = {
-    id = "number",      -- int
-    enchant = "number", -- int
+    id = "number",            -- int
+    enchant = "number",       -- int
+    --random_suffix = "number", -- int
+    gems = "table",           -- int[]
 }
-
-if Env.IS_CLASSIC_ERA then
-    protobufLayout.random_suffix = "number" -- int
-    if Env.IS_CLASSIC_ERA_SOD then
-        protobufLayout.rune = "number"      -- int
-    end
-elseif Env.IS_CLASSIC_WRATH then
-    protobufLayout.gems = "table"           -- int[]
-elseif Env.IS_CLASSIC_CATA then
-    protobufLayout.gems = "table"           -- int[]
-    protobufLayout.random_suffix = "number" -- int
-    protobufLayout.reforging = "number"     -- int
-end
 
 local ItemSpecMeta = { isItemSpec = true, _structure = protobufLayout }
 ItemSpecMeta.__index = ItemSpecMeta
@@ -63,25 +52,7 @@ function ItemSpecMeta:FillFromItemLink(itemLink)
             end 
         end
     end
-    if self._structure.random_suffix then
-        self.random_suffix = tonumber(suffixId)
-    end
-end
-
----Set rune spell from an item in a slot, if item has a rune engraved.
----@param slotId integer
----@param bagId integer|nil If not nil check bag items instead of equipped items.
-function ItemSpecMeta:SetRuneSpellFromSlot(slotId, bagId)
-    if not self._structure.rune then return end
-    self.rune = Env.GetEngravedRuneSpell(slotId, bagId)
-end
-
----Set reforge ID from an equipped item, if item is reforged.
----@param unit string
----@param slotId integer
-function ItemSpecMeta:SetReforge(unit, slotId)
-    if not self._structure.reforging then return end
-    self.reforging = Env.GetReforgeId(unit, slotId)
+    --self.random_suffix = tonumber(suffixId)
 end
 
 ---Create a new ItemSpec table.

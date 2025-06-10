@@ -60,8 +60,6 @@ function EquipmentSpecMeta:UpdateEquippedItems(unit)
         if itemLink then
             local itemSpec = Env.CreateItemSpec()
             itemSpec:FillFromItemLink(itemLink)
-            if Env.IS_CLASSIC_ERA_SOD then itemSpec:SetRuneSpellFromSlot(slotId) end
-            if Env.IS_CLASSIC_CATA then itemSpec:SetReforge(unit, slotId) end
             self.items[itemIndex] = itemSpec
         end
     end
@@ -70,8 +68,6 @@ end
 ---Fill items with items from bag. Valid items are filtered by
 ---the Env.TreatItemAsPossibleUpgrade(itemLink) function.
 function EquipmentSpecMeta:FillFromBagItems()
-    local GetContainerNumSlots = C_Container.GetContainerNumSlots
-    local GetContainerItemLink = C_Container.GetContainerItemLink
     self:Reset()
     for bagId = 0, NUM_BAG_SLOTS do
         for slotId = 1, GetContainerNumSlots(bagId) do
@@ -79,7 +75,6 @@ function EquipmentSpecMeta:FillFromBagItems()
             if itemLink and Env.TreatItemAsPossibleUpgrade(itemLink) then
                 local itemSpec = Env.CreateItemSpec()
                 itemSpec:FillFromItemLink(itemLink)
-                if Env.IS_CLASSIC_ERA_SOD then itemSpec:SetRuneSpellFromSlot(slotId, bagId) end
                 table.insert(self.items, itemSpec)
             end
         end

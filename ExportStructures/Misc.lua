@@ -5,30 +5,17 @@ local Env = select(2, ...)
 function Env.CreateGlyphEntry()
     local numGlyphSockets = GetNumGlyphSockets();
     local glyphs = {
-        prime = {},
         major = {},
         minor = {},
     }
     
-    if Env.IS_CLASSIC_WRATH then
-        for t = 1, numGlyphSockets do
-            local enabled, glyphType, glyphSpellID = GetGlyphSocketInfo(t)
-            if enabled and glyphSpellID then
-                local glyphtable = glyphType == 1 and glyphs.major or glyphs.minor
-                table.insert(glyphtable, { spellID = glyphSpellID })
-            end
-        end
-        return glyphs
-    elseif (Env.IS_CLASSIC_CATA) then
-        for t = 1, numGlyphSockets do
-            local enabled, glyphType, glyphTooltipIndex, glyphID = GetGlyphSocketInfo(t)
-            if enabled and glyphType and glyphID then
-                local glyphtable = glyphType == 1 and glyphs.major or glyphType == 2 and glyphs.minor or glyphs.prime
-                table.insert(glyphtable, { spellID = glyphID })
-            end
+    for t = 1, numGlyphSockets do
+        local enabled, glyphType, glyphSpellID = GetGlyphSocketInfo(t)
+        if enabled and glyphSpellID then
+            local glyphtable = glyphType == 1 and glyphs.major or glyphs.minor
+            table.insert(glyphtable, { spellID = glyphSpellID })
         end
     end
-
     return glyphs
 
 end
@@ -55,7 +42,6 @@ end
 ---@return string
 function Env.CreateTalentString()
     local GetTalentRank = Env.GetTalentRankOrdered
-    local GetNumTalents = Env.GetNumTalentsFixed
     local tabs = {}
     for tab = 1, GetNumTalentTabs() do
         local talents = {}

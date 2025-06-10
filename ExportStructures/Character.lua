@@ -31,7 +31,7 @@ end
 ---Fill all data for unit.
 ---@param unit "player"|"target" Target unit. "target" would need to be inspect target.
 function CharacterMeta:SetUnit(unit)
-    local name, realm = UnitFullName(unit)
+    local name, realm = UnitName(unit)
     local _, englishClass, _, englishRace = GetPlayerInfoByGUID(UnitGUID(unit))
 
     self.version = Env.VERSION
@@ -53,10 +53,8 @@ function CharacterMeta:FillForExport()
     local equipmentSet = Env.CreateEquipmentSpec()
     equipmentSet:UpdateEquippedItems(self.unit)
     self.gear = equipmentSet
+    self.glyphs = Env.CreateGlyphEntry()
 
-    if not Env.IS_CLASSIC_ERA then
-        self.glyphs = Env.CreateGlyphEntry()
-    end
 end
 
 local function CreateCharacter()

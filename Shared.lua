@@ -2,18 +2,6 @@ local Env = select(2, ...)
 
 Env.VERSION = GetAddOnMetadata(select(1, ...), "Version")
 
-Env.IS_CLASSIC_ERA = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
-Env.IS_CLASSIC_ERA_SOD = Env.IS_CLASSIC_ERA and C_Engraving.IsEngravingEnabled()
-Env.IS_CLASSIC_WRATH = WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC
-Env.IS_CLASSIC_CATA = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
-Env.IS_CLIENT_SUPPORTED = Env.IS_CLASSIC_ERA_SOD or Env.IS_CLASSIC_WRATH or Env.IS_CLASSIC_CATA
-
-Env.supportedClientNames = {
-    "Classic: Cataclysm",
-    "Classic: WotLK",
-    "Classic: SoD (Export may work for Era, but sim is made for SoD only!)",
-}
-
 -- This is needed because classic has no way to get Ids for professions.
 -- GetSkillLineInfo() only returns localized values. GetSpellInfo() also does.
 -- These spells are NOT the skill line, but have the same name in english,
@@ -49,7 +37,7 @@ local statToStatId = {
 -- TODO(Riotdog-GehennasEU): Is this sufficient? This seems to be what simc uses:
 -- https://github.com/simulationcraft/simc-addon/blob/master/core.lua
 -- Except we don't need the artifact check for wotlk classic.
----@param itemLink string See https://wowpedia.fandom.com/wiki/ItemLink
+---@param itemLink string See https://warcraft.wiki.gg/wiki/ItemLink
 ---@return boolean exportItem true if item should be exported
 function Env.TreatItemAsPossibleUpgrade(itemLink)
     if not IsEquippableItem(itemLink) then return false end
@@ -59,23 +47,8 @@ function Env.TreatItemAsPossibleUpgrade(itemLink)
     local itemLevel = itemInfo[4]
     local itemClassId = itemInfo[12]
 
-    if Env.IS_CLASSIC_ERA then
-        local minIlvl = UnitLevel("player") - 15
-        if itemLevel <= minIlvl
-            or itemRarity < Enum.ItemQuality.Good then
-            return false
-        end
-    elseif Env.IS_CLASSIC_WRATH or Env.IS_CLASSIC_CATA then
-        -- Ignore TBC items like Rocket Boots Xtreme (Lite). The ilvl limit is intentionally set low
-        -- to limit accidental filtering.
-        if itemLevel <= 112
-            or itemRarity < Enum.ItemQuality.Rare then
-            return false
-        end
-    end
-
     -- Ignore ammunition.
-    if itemClassId == Enum.ItemClass.Projectile then
+    if itemClassId == 6 then
         return false
     end
 
@@ -93,14 +66,6 @@ function Env.StatBiggerThanStat(stat1, stat2)
     assert(statId1 and statId2, "Invalid stat identifiers provided!")
     return select(2, UnitStat("player", statId1)) > select(2, UnitStat("player", statId2))
 end
-
--- Some runes learn multiple spells, i.e. the learnedAbilitySpellIDs array of the
--- rune data returned by C_Engraving.GetRuneForEquipmentSlot and C_Engraving.GetRuneForInventorySlot
--- has multiple entries. The sim uses one of those Ids to indentify runes.
--- Map the first spell Id to the expected spell Id for runes that do not have it at position 1.
-local runeSpellRemap = {
-    [407993] = 407995, -- Mangle: The bear version is expected.
-}
 
 -- Ring Runes don't provide a Spell ID like other runes do. We have to convert the Enchant ID back to the Spell ID manually.
 -- Ordered by spell name
@@ -121,55 +86,6 @@ local enchantmentIDToSpellID = {
     [7518] = 442897, -- Shadow Specialization
     [7507] = 442813, -- Sword Specialization
 }
-
----Get rune spell from an item in a slot, if item has a rune engraved.
----@param slotId integer
----@param bagId integer|nil If not nil check bag items instead of equipped items.
----@return integer|nil abilitySpellId The first spell id granted by the rune, or nil if no rune engraved.
-function Env.GetEngravedRuneSpell(slotId, bagId)
-    -- After first login the whole engraving stuff may not be loaded yet!
-    -- GetNumRunesKnown will return 0 for maximum runes available in that case.
-    if select(2, C_Engraving.GetNumRunesKnown()) == 0 then
-        LoadAddOn("Blizzard_EngravingUI")
-        C_Engraving.RefreshRunesList()
-    end
-
-    -- The shoulder "runes" are special and don't use the C_Engraving API
-    -- Instead they override a special spell "Soul Engraving" (1219955)
-    if bagId == nil then
-        if slotId == INVSLOT_SHOULDER then
-            return FindSpellOverrideByID(1219955)
-        end
-    else
-        local itemLocation = ItemLocation:CreateFromBagAndSlot(bagId, slotId)
-        local inventoryType = C_Item.GetItemInventoryType(itemLocation)
-        if inventoryType == Enum.InventoryType.IndexShoulderType then
-            return Env.GetSoulEngravingSpellID(slotId, bagId)
-        end
-    end
-
-    local runeData
-    if bagId == nil then
-        runeData = C_Engraving.GetRuneForEquipmentSlot(slotId)
-    else
-        runeData = C_Engraving.GetRuneForInventorySlot(bagId, slotId)
-    end
-
-    if runeData then
-        local firstSpellId = runeData.learnedAbilitySpellIDs[1]
-        if firstSpellId == nil then
-            -- Fall back to re-mapping the enchant ID.
-            -- Should only apply to ring specializations for now.
-            return enchantmentIDToSpellID[runeData.itemEnchantmentID]
-        else
-            -- All non-ring runes should have a Spell ID
-            if runeSpellRemap[firstSpellId] then
-                return runeSpellRemap[firstSpellId]
-            end
-            return firstSpellId
-        end
-    end
-end
 
 ---Counts spent talent points per tree.
 ---@param isInspect boolean If true use inspect target.
@@ -229,7 +145,7 @@ CreateFrame("GameTooltip", "WSEScanningTooltip", nil, "GameTooltipTemplate")
 WSEScanningTooltip:SetOwner(WorldFrame, "ANCHOR_NONE")
 
 local baseItemLink = "item:9333:"
-C_Item.RequestLoadItemDataByID(baseItemLink)
+--C_Item.RequestLoadItemDataByID(baseItemLink)
 
 ---@return table<integer, string>
 local function GetBaseItemText()

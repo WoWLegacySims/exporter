@@ -30,8 +30,6 @@ local function CreateCopyDialog(text)
     editbox:SetText(text)
     editbox:SetFullWidth(true)
     editbox:DisableButton(true)
-    editbox:SetFocus()
-    editbox:HighlightText()
     frame:AddChild(editbox)
 end
 
@@ -127,12 +125,8 @@ end
 ---@param onClick fun()
 function UI:CreateCharacterPanelButton(onClick)
     local openButton = CreateFrame("Button", nil, CharacterFrame, "UIPanelButtonTemplate")
-    if Env.IS_CLASSIC_CATA then
-        openButton:SetPoint("TOPRIGHT", CharacterFrame, "BOTTOMRIGHT", 0, 0)
-    else
-        openButton:SetPoint("RIGHT", CharacterFrameCloseButton, "RIGHT", 0, 0)
-        openButton:SetPoint("TOP", CharacterFrameTab1, "TOP", 0, 0)
-    end
+    openButton:SetPoint("RIGHT", CharacterFrameCloseButton, "RIGHT", 0, 0)
+    openButton:SetPoint("TOP", CharacterFrameTab1, "TOP", 0, 0)
     openButton:Show()
     openButton:SetText("WowSims")
     openButton:SetSize(openButton:GetTextWidth() + 15, openButton:GetTextHeight() + 10)
@@ -147,8 +141,6 @@ end
 function UI:SetOutput(outputString)
     if not _frame or not _jsonbox then return end
     _jsonbox:SetText(outputString)
-    _jsonbox:HighlightText()
-    _jsonbox:SetFocus()
     _frame:SetStatusText("Data Generated!")
 end
 
